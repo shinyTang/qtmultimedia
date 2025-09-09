@@ -85,7 +85,7 @@ inline bool qt_area_sane(const QSize &size)
            && std::numeric_limits<int>::max() / size.width() >= size.height();
 }
 
-struct ResolutionPredicate : std::binary_function<AVCaptureDeviceFormat *, AVCaptureDeviceFormat *, bool>
+struct ResolutionPredicate
 {
     bool operator() (AVCaptureDeviceFormat *f1, AVCaptureDeviceFormat *f2)const
     {
@@ -96,7 +96,7 @@ struct ResolutionPredicate : std::binary_function<AVCaptureDeviceFormat *, AVCap
     }
 };
 
-struct FormatHasNoFPSRange : std::unary_function<AVCaptureDeviceFormat *, bool>
+struct FormatHasNoFPSRange
 {
     bool operator() (AVCaptureDeviceFormat *format)
     {
@@ -309,8 +309,12 @@ AVCaptureDeviceFormat *qt_find_best_framerate_match(AVCaptureDevice *captureDevi
 
     QVector<AVCaptureDeviceFormat *>sorted(qt_unique_device_formats(captureDevice, filter));
     // Sort formats by their resolution in decreasing order:
-    std::sort(sorted.begin(), sorted.end(), std::not2(ResolutionPredicate()));
-    // We can use only formats with framerate ranges:
+    //std::sort(sorted.begin(), sorted.end(), std::not2(ResolutionPredicate()));
+    std::sort(sorted.begin(), sorted.end(),
+                [](AVCaptureDeviceFormat *a, AVCaptureDeviceFormat *b) {
+                    ResolutionPredicate pred;
+                    return !pred(a, b);
+                });    // We can use only formats with framerate ranges:
     sorted.erase(std::remove_if(sorted.begin(), sorted.end(), FormatHasNoFPSRange()), sorted.end());
 
     if (!sorted.size())

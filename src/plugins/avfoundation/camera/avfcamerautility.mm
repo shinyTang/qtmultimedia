@@ -85,6 +85,7 @@ inline bool qt_area_sane(const QSize &size)
            && std::numeric_limits<int>::max() / size.width() >= size.height();
 }
 
+
 struct ResolutionPredicate
 {
     bool operator() (AVCaptureDeviceFormat *f1, AVCaptureDeviceFormat *f2)const
